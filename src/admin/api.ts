@@ -24,7 +24,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     headers,
   })
 
-  if (response.status === 401) {
+  // A 401 from the sign-in call is a wrong password, not a dead session, so it
+  // must reach the form. Reloading the login page here hid the real message.
+  if (response.status === 401 && path !== '/api/admin/login') {
     window.location.assign('/admin-login.html')
     throw new ApiError('Your session expired. Sign in again.', 401)
   }
