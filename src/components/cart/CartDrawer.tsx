@@ -115,7 +115,7 @@ export function CartDrawer() {
               {lines.map((line) => (
                 <li key={line.key} className="flex gap-4 py-6">
                   <Link
-                    to={`/product/${line.slug}`}
+                    to={`/shop?piece=${line.slug}&color=${line.colorId}`}
                     onClick={() => setOpen(false)}
                     tabIndex={open ? 0 : -1}
                     className="block w-20 shrink-0 border border-line bg-paper-deep"

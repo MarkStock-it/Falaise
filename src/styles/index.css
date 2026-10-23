@@ -274,6 +274,53 @@
   }
 }
 
+/* ---- Page-to-page transitions -------------------------------------------
+   Triggered by <Link viewTransition>. The page is its own snapshot so it can
+   lift and cross-fade; the header is named separately so it stays nailed to
+   the top of the viewport while the content changes underneath. */
+#main {
+  view-transition-name: page;
+}
+
+.site-header {
+  view-transition-name: header;
+}
+
+::view-transition-group(page) {
+  animation-duration: 0.5s;
+}
+
+::view-transition-old(page) {
+  animation: page-leave 0.22s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+::view-transition-new(page) {
+  animation: page-enter 0.5s var(--ease-out-expo) both;
+}
+
+::view-transition-old(header),
+::view-transition-new(header),
+::view-transition-group(header) {
+  animation: none;
+}
+
+@keyframes page-leave {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes page-in {
   /* Opacity only. A transform here creates a containing block for fixed
      descendants such as the bag drawer and the cursor. */
@@ -296,6 +343,14 @@
   }
 
   .page-in {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(page),
+  ::view-transition-old(page),
+  ::view-transition-new(page) {
     animation: none;
   }
 }

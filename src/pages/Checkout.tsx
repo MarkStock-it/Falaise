@@ -21,7 +21,7 @@ export function Checkout() {
   }))
 
   usePageMeta({
-    title: 'Order on Instagram — FALAISE',
+    title: 'Order on Instagram | FALAISE',
     description:
       'Send your FALAISE order in an Instagram message. We confirm stock, shipping and payment in the same thread. No checkout, no card details on this site.',
   })
@@ -34,7 +34,7 @@ export function Checkout() {
   const summary = useMemo(() => {
     const items = lines.map(
       (line) =>
-        `${line.qty} × ${line.name} — ${line.colorName} / ${line.size} — ${formatPrice(line.price * line.qty)}`,
+        `${line.qty} × ${line.name}, ${line.colorName} / ${line.size}, ${formatPrice(line.price * line.qty)}`,
     )
 
     return [

@@ -1,9 +1,10 @@
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useSite } from '../store/site'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { Reveal } from '../components/ui/Reveal'
 import { Arrow } from '../components/ui/Button'
 import { ProductCard } from '../components/shop/ProductCard'
+import { ProductQuickView } from '../components/shop/ProductQuickView'
 import { formatPrice, isSoldOut } from '../data/products'
 import { fillTokens } from '../lib/tokens'
 
@@ -29,13 +30,15 @@ function HandleText({ text, handle, href }: { text: string; handle: string; href
 
 export function Shop() {
   const { data } = useSite()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const pieceSlug = searchParams.get('piece')
   const featured = data?.products.find((product) => product.featured) ?? data?.products[0]
   const collectionName = data?.collections[0]?.name ?? data?.content.chrome.catalogueLabel ?? 'Catalogue'
   const colourCount = featured?.colors.length ?? 0
   const sizes = featured?.sizes ?? []
 
   usePageMeta({
-    title: `FALAISE — ${collectionName}`,
+    title: `FALAISE | ${collectionName}`,
     description:
       featured?.description.slice(0, 155) ??
       'The FALAISE catalogue. Heavyweight cotton, cut boxy, finished in Cebu.',
@@ -45,6 +48,17 @@ export function Shop() {
   if (!data) return null
 
   const { products, content } = data
+  const pieces = products.flatMap((product) =>
+    product.colors.map((color) => ({ product, color })),
+  )
+  const active = pieceSlug ? products.find((product) => product.slug === pieceSlug) : undefined
+
+  const closePiece = () => {
+    const next = new URLSearchParams(searchParams)
+    next.delete('piece')
+    next.delete('color')
+    setSearchParams(next, { replace: true })
+  }
   const { editorial, print, chrome, shop } = content
   const backBeat = print.beats[2] ?? print.beats[0]
   const constructionBody = fillTokens(shop.constructionBody, { COLLECTION: collectionName })
@@ -88,10 +102,11 @@ export function Shop() {
           <div className="sm:text-right">
             <p className="label text-mute">
               {products.length} piece{products.length === 1 ? '' : 's'} / {colourCount}{' '}
-              colour{colourCount === 1 ? '' : 's'} / {sizes.length > 0 ? sizes.join('–') : '—'}
+              colour{colourCount === 1 ? '' : 's'} /{' '}
+              {sizes.length > 0 ? sizes.join('–') : 'One size'}
             </p>
             <p className="mt-3 font-[family-name:var(--font-label)] text-xl font-[600] tabular-nums">
-              {featured ? formatPrice(featured.price) : '—'}
+              {featured ? formatPrice(featured.price) : 'Price on request'}
             </p>
             <p className="label mt-3 text-mute">
               {featured
@@ -122,9 +137,9 @@ export function Shop() {
           </div>
         ) : (
           <div className="grid gap-8 sm:grid-cols-2 sm:gap-6">
-            {products.map((product, index) => (
-              <Reveal key={product.id} delay={index * 90}>
-                <ProductCard product={product} />
+            {pieces.map(({ product, color }, index) => (
+              <Reveal key={`${product.id}-${color.id}`} delay={(index % 2) * 90}>
+                <ProductCard product={product} color={color} />
               </Reveal>
             ))}
           </div>
@@ -157,7 +172,7 @@ export function Shop() {
                   ))}
                 </dl>
                 <Link
-                  to={`/product/${featured.slug}`}
+                  to={`/shop?piece=${featured.slug}`}
                   className="label link-line mt-6 inline-flex items-center gap-2"
                 >
                   {chrome.shopViewLabel}
@@ -213,7 +228,7 @@ export function Shop() {
                 <h2 className="display mt-5 text-[clamp(2rem,4vw,3.5rem)]">{backBeat.title}</h2>
                 <p className="prose-body mt-5 text-mute">{backBeat.body}</p>
                 <Link
-                  to={featured ? `/product/${featured.slug}` : print.linkHref}
+                  to={featured ? `/shop?piece=${featured.slug}` : print.linkHref}
                   className="label link-line mt-6 inline-flex items-center gap-2"
                 >
                   {print.linkLabel}
@@ -223,6 +238,15 @@ export function Shop() {
             </div>
           </div>
         </section>
+      ) : null}
+
+      {active ? (
+        <ProductQuickView
+          key={active.slug}
+          product={active}
+          colorId={searchParams.get('color')}
+          onClose={closePiece}
+        />
       ) : null}
 
       <section className="shell pb-20 sm:pb-28">

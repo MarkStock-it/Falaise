@@ -35,7 +35,7 @@ export function PolicyPage({ doc }: { doc: PolicyKey }) {
     .filter((section) => section.title || section.paragraphs.length > 0)
 
   usePageMeta({
-    title: `${title} — FALAISE`,
+    title: `${title} | FALAISE`,
     description: lede || `${title} for FALAISE, ${content.site.city}.`,
   })
 

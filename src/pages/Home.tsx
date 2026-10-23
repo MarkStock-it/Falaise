@@ -272,7 +272,8 @@ function HomeView({ data }: { data: StoreData }) {
           <ul className="mt-10">
             <li>
               <Link
-                to={`/product/${featured.slug}`}
+                to={`/shop?piece=${featured.slug}`}
+                viewTransition
                 data-cursor="view"
                 className="group grid grid-cols-12 items-center gap-3 border-y border-line py-5 transition-colors hover:bg-paper-deep sm:gap-4 sm:py-6"
               >
@@ -304,7 +305,8 @@ function HomeView({ data }: { data: StoreData }) {
             {featured.colors.map((color, index) => (
               <Reveal key={color.id} delay={index * 100}>
                 <Link
-                  to={`/product/${featured.slug}?color=${color.id}`}
+                  to={`/shop?piece=${featured.slug}&color=${color.id}`}
+                  viewTransition
                   data-cursor="view"
                   className="group block"
                 >
@@ -336,7 +338,7 @@ function HomeView({ data }: { data: StoreData }) {
                   <div className="mt-4 flex items-start justify-between gap-4 border-b border-line pb-3">
                     <div>
                       <h3 className="display text-[clamp(1.8rem,3.4vw,2.6rem)]">
-                        {featured.name} — {color.name}
+                        {featured.name} / {color.name}
                       </h3>
                       <p className="label mt-2 text-mute">{colours.productNote}</p>
                     </div>
@@ -422,7 +424,7 @@ function HomeView({ data }: { data: StoreData }) {
               href={content.links.instagramDm}
               variant="ink"
               size="lg"
-              ariaLabel={`${drop.ctaLabel} — ${content.links.handle}`}
+              ariaLabel={`${drop.ctaLabel}, ${content.links.handle}`}
             >
               {drop.ctaLabel}
               <Arrow />

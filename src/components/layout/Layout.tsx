@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { Header } from './Header'
 import { Footer } from './Footer'
@@ -11,7 +11,10 @@ import { useSite } from '../../store/site'
 function ScrollToTop() {
   const { pathname } = useLocation()
 
-  useEffect(() => {
+  // Layout effect, not effect: the new page must already sit at the top when
+  // the browser captures its view-transition snapshot, otherwise the shot is
+  // taken at the previous scroll offset and the page lurches afterwards.
+  useLayoutEffect(() => {
     getLenis()?.scrollTo(0, { immediate: true })
     window.scrollTo(0, 0)
   }, [pathname])
@@ -20,7 +23,6 @@ function ScrollToTop() {
 }
 
 export function Layout() {
-  const { pathname } = useLocation()
   const { data } = useSite()
   const bannerHeight = data?.content.banner.enabled ? 36 : 0
 
@@ -38,7 +40,6 @@ export function Layout() {
       <Header />
       <main
         id="main"
-        key={pathname}
         style={{ paddingTop: `calc(4rem + ${bannerHeight}px)` }}
         className="page-in flex-1"
       >

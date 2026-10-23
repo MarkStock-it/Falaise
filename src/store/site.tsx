@@ -90,7 +90,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
           <p className="label text-mute">Connection</p>
           <h1 className="display mt-3 text-3xl">The store did not load.</h1>
           <p className="prose-body mt-4 text-[15px] text-mute">
-            {error || 'No store data was returned.'} The admin edits are safe — this is only the
+            {error || 'No store data was returned.'} The admin edits are safe. This is only the
             storefront losing its data source.
           </p>
           <button

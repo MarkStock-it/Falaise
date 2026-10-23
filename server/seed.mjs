@@ -11,7 +11,7 @@ export const DEFAULT_CONTENT = {
     name: 'FALAISE',
     tagline: 'Rompre avec l’ordinaire.',
     city: 'Liloan, Cebu',
-    metaTitle: 'FALAISE — Rompre avec l’ordinaire',
+    metaTitle: 'FALAISE | Rompre avec l’ordinaire',
     metaDescription:
       'One tee. Two colours. FALAISE Vol. 01 is a heavyweight cotton tee, boxy and cropped, with the words Rompre avec l’ordinaire printed across the back. Order via Instagram.',
     ogImage: '/og/falaise-og.jpg',
@@ -20,7 +20,7 @@ export const DEFAULT_CONTENT = {
 
   banner: {
     enabled: false,
-    text: 'Vol. 01 — Le Tee in noir and blanc.',
+    text: 'Vol. 01: Le Tee in noir and blanc.',
     linkLabel: '',
     linkUrl: '',
   },
@@ -92,7 +92,7 @@ export const DEFAULT_CONTENT = {
         index: '03',
         kicker: 'The back',
         title: 'Rompre avec l’ordinaire.',
-        body: 'Break with the ordinary, pulled across the back in a hand-set script. White on noir, black on blanc — one pass, one run.',
+        body: 'Break with the ordinary, pulled across the back in a hand-set script. White on noir, black on blanc. One pass, one run.',
       },
     ],
     linkLabel: 'Read the full spec',
@@ -120,7 +120,7 @@ export const DEFAULT_CONTENT = {
     eyebrow: 'The drop',
     headline: ['Vol.', '01'],
     lede: 'One tee. Two colours. One run. Noir and blanc are cut now; DMs are answered every day.',
-    body: 'Send the colour and size in an Instagram message. We confirm stock, shipping and payment in the same thread — no checkout, no card form.',
+    body: 'Send the colour and size in an Instagram message. We confirm stock, shipping and payment in the same thread. No checkout, no card form.',
     ctaLabel: 'Order on Instagram',
   },
 
@@ -149,8 +149,8 @@ export const DEFAULT_CONTENT = {
     shopHeading: 'Shop',
     shopLinks: [
       { label: 'Vol. 01', href: '/shop' },
-      { label: 'Le Tee — Noir', href: '/product/le-tee' },
-      { label: 'Le Tee — Blanc', href: '/product/le-tee?color=blanc' },
+      { label: 'Le Tee / Noir', href: '/product/le-tee' },
+      { label: 'Le Tee / Blanc', href: '/product/le-tee?color=blanc' },
       { label: 'Sizing', href: '/product/le-tee' },
     ],
     studioHeading: 'Studio',
@@ -173,7 +173,7 @@ export const DEFAULT_CONTENT = {
 
   /* Copy that used to be hardcoded in JSX. Percent tokens: %HANDLE% and %CITY%. */
   sizing: {
-    note: 'Garment measured flat, in inches. Boxy crop fit — take your usual size, or size up for more length through the body.',
+    note: 'Garment measured flat, in inches. Boxy crop fit: take your usual size, or size up for more length through the body.',
     unit: 'inches',
     widthLabel: 'Width',
     lengthLabel: 'Length',
@@ -223,7 +223,7 @@ export const DEFAULT_CONTENT = {
       {
         question: 'Can I return or exchange a tee?',
         answer:
-          'Yes — unworn, unwashed, with tags, within 14 days of delivery. Message %HANDLE% first so we can expect the parcel. We cover return shipping if the piece arrived faulty or the wrong item was sent; otherwise return postage is yours.',
+          'Yes. Unworn, unwashed, with tags, within 14 days of delivery. Message %HANDLE% first so we can expect the parcel. We cover return shipping if the piece arrived faulty or the wrong item was sent; otherwise return postage is yours.',
       },
     ],
   },
@@ -233,7 +233,7 @@ export const DEFAULT_CONTENT = {
     headline: ['Wear', 'the edge.'],
     lede: 'Falaise is French for the edge of a cliff. A place to stand before the view decides what you do next.',
     body:
-      'We took the name as a brief. Vol. 01 is one garment — a heavyweight cotton tee, cut boxy and cropped — in two colours. No season to keep up with. No fourth colour coming later. Just the tee, made properly, until it is gone.',
+      'We took the name as a brief. Vol. 01 is one garment: a heavyweight cotton tee, cut boxy and cropped, in two colours. No season to keep up with. No fourth colour coming later. Just the tee, made properly, until it is gone.',
     manifestoTitle: 'One garment is enough to begin.',
     manifestoA:
       'Most labels start with a range. We started with a tee, because a tee is the hardest thing to get right and the easiest thing to over-design. The body is squared, the shoulder sits low, the hem stops at the waist. The print does the rest.',
@@ -268,23 +268,23 @@ export const DEFAULT_CONTENT = {
       { term: 'Print', value: 'Screen print at back' },
     ],
     figureCaption: 'Vol. 01 / worn away from the studio',
-    figureNote: 'Noir, size M — 001',
+    figureNote: 'Noir, size M / 001',
     factsHeading: 'At a glance',
     factsNote:
-      'Measurements, fabric and care are listed on the product page. If a size is gone, write to the studio — we will tell you honestly whether it is coming back.',
+      'Measurements, fabric and care are listed on the product page. If a size is gone, write to the studio and we will tell you honestly whether it is coming back.',
     closingHeadline: ['See it worn,', 'then choose.'],
     closingBody:
       'Front, back and print detail, photographed on the body in both colours. Read the spec, then choose a size.',
   },
 
   order: {
-    dmIntro: 'Hi FALAISE — I would like to order:',
+    dmIntro: 'Hi FALAISE, I would like to order:',
     dmOutro: 'Please confirm stock, shipping and payment.',
     checkoutSteps: [
       {
         index: '01',
         title: 'Check the bag',
-        body: 'Colour, size and quantity. The bag is only a list — nothing is reserved until we reply.',
+        body: 'Colour, size and quantity. The bag is only a list. Nothing is reserved until we reply.',
       },
       {
         index: '02',
@@ -306,7 +306,7 @@ export const DEFAULT_CONTENT = {
       {
         index: '02',
         title: 'Send one message',
-        body: 'Copy the order summary from the bag and send it to %HANDLE% on Instagram. One DM is enough — no form, no account.',
+        body: 'Copy the order summary from the bag and send it to %HANDLE% on Instagram. One DM is enough. No form, no account.',
       },
       {
         index: '03',
@@ -317,14 +317,14 @@ export const DEFAULT_CONTENT = {
   },
 
   /*
-   * The three policy pages: /privacy, /terms and /returns. Seeded as drafts —
+   * The three policy pages: /privacy, /terms and /returns. Seeded as drafts:
    * they describe what this software actually does (no card data, no analytics,
    * admin-only access to inquiries) and carry the promises already made on the
    * product page. The owner reviews them at Admin → Content → Policies.
    */
   policies: {
     index: 'Policies / 04',
-    updated: 'Draft copy — confirm with the studio before launch.',
+    updated: 'Draft copy. Confirm with the studio before launch.',
     note: 'Anything unclear, or a request about your own data: message %HANDLE% and a person will answer.',
     privacy: {
       title: 'Privacy',
@@ -332,7 +332,7 @@ export const DEFAULT_CONTENT = {
       sections: [
         {
           title: 'What is held',
-          body: 'A name, a contact handle, the message you sent and the piece you asked about. If the order goes ahead, also the delivery address and the payment reference. Nothing else — no account on this site, no card details, no browsing history.',
+          body: 'A name, a contact handle, the message you sent and the piece you asked about. If the order goes ahead, also the delivery address and the payment reference. Nothing else. No account on this site, no card details, no browsing history.',
         },
         {
           title: 'Where it lives',
@@ -374,7 +374,7 @@ export const DEFAULT_CONTENT = {
         },
         {
           title: 'The studio may decline',
-          body: 'An order can be turned down — a sold-out size, an address the courier cannot reach, or a request that looks like a resale run. Anything already paid is returned in full.',
+          body: 'An order can be turned down: a sold-out size, an address the courier cannot reach, or a request that looks like a resale run. Anything already paid is returned in full.',
         },
         {
           title: 'Which law applies',
@@ -459,7 +459,7 @@ export const DEFAULT_CONTENT = {
     sendOrderLabel: 'Send order on Instagram',
     viewSummaryLabel: 'View the order summary',
     emptyBagTitle: 'Nothing yet.',
-    emptyBagBody: 'The bag is empty. One tee, two colours — start with the noir.',
+    emptyBagBody: 'The bag is empty. One tee, two colours. Start with the noir.',
     emptyBagValue: 'No items',
     shopConstructionIndex: '01 / The construction',
     shopViewLabel: 'See every view',
@@ -510,7 +510,7 @@ export const DEFAULT_CONTENT = {
 
   contact: {
     headline: ['Message', 'the studio.'],
-    lede: 'Orders, sizing, shipping, returns — one Instagram thread.',
+    lede: 'Orders, sizing, shipping, returns. One Instagram thread.',
     body: 'A person reads every message. Usually the same person who checked the print. The account stays open, so write whenever it suits you.',
     ordersHeading: 'How it works',
     ordersBody:
@@ -529,15 +529,15 @@ export const DEFAULT_CONTENT = {
 
   checkout: {
     headline: ['Take it', 'to the DMs.'],
-    lede: 'Your bag is ready. Send the order to %HANDLE% — we confirm stock, shipping and payment in the same thread.',
+    lede: 'Your bag is ready. Send the order to %HANDLE%. We confirm stock, shipping and payment in the same thread.',
     emptyHeadline: 'Nothing to send.',
     emptyLedeNone: 'The bag is empty. Nothing is listed right now.',
-    emptyLedeSingle: 'The bag is empty. Vol. 01 is one piece — start there.',
+    emptyLedeSingle: 'The bag is empty. Vol. 01 is one piece. Start there.',
     emptyLedeMany: 'The bag is empty. Start with the collection.',
     emptyCardNote:
-      'Orders happen in an Instagram message. We confirm stock, shipping and payment there — no card details are collected on this site.',
+      'Orders happen in an Instagram message. We confirm stock, shipping and payment there. No card details are collected on this site.',
     copyHelp:
-      'Opening the DM copies your order summary to the clipboard. Paste it into the message — Instagram does not allow a pre-filled DM.',
+      'Opening the DM copies your order summary to the clipboard. Paste it into the message. Instagram does not allow a pre-filled DM.',
     copyFailed:
       'Clipboard access was blocked. Select the summary below and copy it manually before opening Instagram.',
     piecesLabel: 'pcs',
