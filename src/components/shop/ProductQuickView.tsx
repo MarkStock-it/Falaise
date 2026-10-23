@@ -150,6 +150,9 @@ export function ProductQuickView({ product, colorId, onClose }: QuickViewProps) 
     }
     const script = document.createElement('script')
     script.type = 'application/ld+json'
+    // Production sends a per-response CSP nonce for inline scripts.
+    const nonce = document.querySelector<HTMLMetaElement>('meta[name="csp-nonce"]')?.content
+    if (nonce) script.nonce = nonce
     script.text = JSON.stringify(schema)
     document.head.appendChild(script)
     return () => script.remove()

@@ -49,6 +49,7 @@ server/
   repo.mjs              all read/write queries + product hydration + CSV export
   backup.mjs            catalogue + content export/restore (inquiries and secrets excluded)
   auth.mjs              scrypt hashing, HMAC sessions, cookies, same-origin, rate limit
+  archive.mjs           dependency-free tar.gz backup of the database and uploads
   validate.mjs          normalizeProduct/Collection/Inquiry/Content, image decode, CONTENT_KEYS
   env.mjs               minimal .env loader (does not override existing env)
   seed.mjs              default content/products/collections used on first boot
@@ -197,11 +198,12 @@ instance would open a second, empty disk. Not deployed yet.
 
 ## Known issues and don't-touch areas
 
-- **`docs/SECURITY-AUDIT.md` is current and unfixed.** The headline issue: `npm run dev` serves the
-  whole project root through Vite, so `/data/admin-credentials.txt`, `/data/session-secret` and
-  `/data/falaise.db` are downloadable on the dev port, and the leaked secret allows forging an
-  admin session. Do not expose the dev port through a tunnel until this is fixed.
-- Treat the current admin password and `data/session-secret` as compromised; rotate both.
+- `docs/SECURITY-AUDIT.md` records ten findings; all code items are now fixed and re-tested
+  (see its remediation table). The dev-server leak is blocked by a guard in front of
+  `vite.middlewares`, so `/data`, `/server`, dotfiles and `node_modules` (except `.vite`) 404 on
+  the dev port.
+- Credentials that existed before 2026-10-23 are still compromised: earlier archives contain the
+  admin password and `data/session-secret`. Rotate both on any instance built from them.
 - **Never commit** `data/` (database, WAL, secrets, uploads), `.env`, or `dist/`.
 - **Don't rename** `CONTENT_KEYS` values or `content.*` field paths: `src/admin/contentSchema.ts`
   and the storefront components are wired to them and existing DB rows would silently stop
@@ -220,7 +222,6 @@ instance would open a second, empty disk. Not deployed yet.
 Storefront and admin are functionally complete and verified running from `E:\Falaise`
 (`npm run typecheck` clean, `/api/store` 200, all routes render). One Render service with a
 disk is prepared (`render.yaml`, `docs/DEPLOY.md`) but **not deployed**: there is no live
-instance, no off-site backup and no analytics. Immediate next steps: deploy on Render, rotate
-the password and session secret on that instance, remediate `docs/SECURITY-AUDIT.md`
-(dev-mode leak), then add sitemap/robots hardening, error monitoring and a launch checklist.
-See `BUILD_PLAN.md` for the ordered list.
+instance, no analytics. The audit findings are fixed; what remains is operational: rotate the
+credentials that predate the fixes, take the first full archive off-site, then add sitemap/robots
+hardening, error monitoring and a launch checklist. See `BUILD_PLAN.md` for the ordered list.

@@ -2,7 +2,7 @@ import './env.mjs'
 import express from 'express'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { randomUUID } from 'node:crypto'
+import { randomBytes, randomUUID } from 'node:crypto'
 import { DATA_DIR, ROOT, UPLOAD_DIR, db, getContentMap, logActivity, nowIso, putContent } from './db.mjs'
 import {
   bulkSetStock,
@@ -53,8 +53,17 @@ import {
   normalizeStock,
 } from './validate.mjs'
 import { exportBackup, restoreBackup } from './backup.mjs'
+import { backupArchive } from './archive.mjs'
 
 const DIST = join(ROOT, 'dist')
+
+// Everything the storefront loads comes from this origin. `unsafe-inline` is
+// limited to styles because the pages set a few dynamic values (colour swatches,
+// the sticky header offset); scripts get a per-response nonce instead.
+const CSP_BASE =
+  "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; " +
+  "font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; " +
+  "form-action 'self'; frame-ancestors 'none'"
 
 function parseLimit(value, fallback = 20) {
   const n = Number(value)
@@ -80,9 +89,25 @@ export function createApp({ vite = null } = {}) {
     res.setHeader('X-Content-Type-Options', 'nosniff')
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
     res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()')
+    if (!vite) {
+      // Dev serves inline HMR scripts, so the strict policy is production-only.
+      // HTML responses replace this with a nonce-carrying variant.
+      res.setHeader('Content-Security-Policy', `${CSP_BASE}; script-src 'self'`)
+      res.setHeader('Strict-Transport-Security', 'max-age=31536000')
+    }
     next()
   })
-  app.use(express.json({ limit: '9mb' }))
+
+  // Most JSON bodies are small. Only the image upload and a full restore need
+  // the larger cap, so an unauthenticated client cannot make the server buffer
+  // and parse 9 MB on every route.
+  const smallJson = express.json({ limit: '1mb' })
+  const largeJson = express.json({ limit: '9mb' })
+  app.use((req, res, next) => {
+    const large = req.path === '/api/admin/uploads' || req.path === '/api/admin/restore'
+    return (large ? largeJson : smallJson)(req, res, next)
+  })
 
   // ---------------------------------------------------------------- public API
   app.get('/api/health', (req, res) => res.json({ ok: true, at: nowIso() }))
@@ -106,6 +131,7 @@ export function createApp({ vite = null } = {}) {
     const password = typeof req.body?.password === 'string' ? req.body.password : ''
     if (!verifyPassword(password)) {
       recordLoginFailure(ip)
+      logActivity('login', 'admin', null, `Failed admin sign-in from ${ip}.`)
       return fail(res, 401, 'That password is not right.')
     }
     clearLoginFailures(ip)
@@ -156,6 +182,9 @@ export function createApp({ vite = null } = {}) {
       })
     }
     setPassword(newPassword)
+    // Tokens are bound to the password hash, so every earlier session is now
+    // dead. Re-issue this browser's cookie so the operator stays signed in.
+    setSessionCookie(req, res, createSessionToken())
     logActivity('updated', 'admin', null, 'Changed the admin password.')
     return res.json({ ok: true })
   })
@@ -240,6 +269,20 @@ export function createApp({ vite = null } = {}) {
 
   admin.get('/activity', (req, res) => {
     res.json({ entries: listActivity(parseLimit(req.query.limit, 30)) })
+  })
+
+  admin.get('/backup/archive', (req, res) => {
+    const { buffer, filename } = backupArchive()
+    res.setHeader('Content-Type', 'application/gzip')
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
+    res.setHeader('Content-Length', String(buffer.length))
+    logActivity(
+      'backup',
+      'archive',
+      null,
+      `Downloaded a full backup (${Math.max(1, Math.round(buffer.length / 1024))} KB).`,
+    )
+    return res.send(buffer)
   })
 
   admin.get('/backup', (req, res) => {
@@ -341,6 +384,21 @@ export function createApp({ vite = null } = {}) {
   app.use('/api/admin', admin)
 
   // ---------------------------------------------------------------- pages
+  /**
+   * Sends a built HTML file with a fresh CSP nonce. The storefront creates one
+   * inline JSON-LD block at runtime and reads the nonce from the meta tag, so
+   * scripts can stay on `'self' 'nonce-…'` instead of `'unsafe-inline'`.
+   */
+  function sendHtmlFile(res, file, { cache = 'no-store' } = {}) {
+    const html = readFileSync(file, 'utf8')
+    const nonce = randomBytes(16).toString('base64')
+    const tag = `<meta name="csp-nonce" content="${nonce}" />`
+    const body = html.includes('</head>') ? html.replace('</head>', `    ${tag}\n  </head>`) : html
+    res.setHeader('Content-Security-Policy', `${CSP_BASE}; script-src 'self' 'nonce-${nonce}'`)
+    res.setHeader('Cache-Control', cache)
+    return res.status(200).setHeader('Content-Type', 'text/html; charset=utf-8').end(body)
+  }
+
   function sendAdminHtml(req, res, file) {
     if (vite) {
       const template = readFileSync(join(ROOT, file), 'utf8')
@@ -348,9 +406,7 @@ export function createApp({ vite = null } = {}) {
         res.status(200).setHeader('Content-Type', 'text/html').end(html)
       })
     }
-    // The workspace path may contain dot-directories (e.g. .config on Windows);
-    // send() blocks those by default, so allow them for these two known files.
-    return res.sendFile(join(DIST, file), { dotfiles: 'allow' })
+    return sendHtmlFile(res, join(DIST, file))
   }
 
   app.get('/admin.html', (req, res) => {
@@ -375,6 +431,20 @@ export function createApp({ vite = null } = {}) {
   )
 
   if (vite) {
+    // Vite's middleware serves any file under the project root, which would
+    // publish the database, the session secret and the admin password to anyone
+    // who can reach the dev port. Keep the dev-only dependency cache, block the
+    // rest.
+    app.use((req, res, next) => {
+      const path = req.path
+      const blocked =
+        /^\/(data|server|docs|screenshots|tools)(\/|$)/.test(path) ||
+        /^\/\.(env|git)/.test(path) ||
+        /^\/(package(-lock)?\.json|tsconfig\.json|vite\.config\.ts|render\.yaml)$/.test(path) ||
+        (path.startsWith('/node_modules/') && !path.startsWith('/node_modules/.vite/'))
+      if (blocked) return res.status(404).type('text/plain').send('Not found.')
+      return next()
+    })
     app.use(vite.middlewares)
   } else {
     app.use(
@@ -398,7 +468,7 @@ export function createApp({ vite = null } = {}) {
           .status(500)
           .send('Store not built. Run `npm run build` first, or use `npm run dev`.')
       }
-      return res.sendFile(index, { dotfiles: 'allow' })
+      return sendHtmlFile(res, index, { cache: 'no-cache' })
     })
   }
 
@@ -409,6 +479,7 @@ export function createApp({ vite = null } = {}) {
       return fail(res, 413, 'That upload is too large (9 MB request limit).')
     }
     if (error?.status === 404) return fail(res, 404, 'Not found.')
+    if (error?.status === 403) return fail(res, 403, 'Forbidden.')
     if (error instanceof SyntaxError) return fail(res, 400, 'Malformed JSON body.')
     console.error(error)
     return fail(res, 500, 'Something went wrong on the server.')

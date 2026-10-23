@@ -17,6 +17,28 @@ tokens with expiry, HttpOnly + SameSite cookies, an origin check on writes, magi
 upload validation, and React-only rendering (no `innerHTML`). The critical issue is not the
 app logic — it is what the **development server** exposes.
 
+## Remediation status (2026-10-23)
+
+Each item was repaired and re-tested against a production-mode build (`NODE_ENV=production`,
+`HOST=0.0.0.0`, a data directory outside the repo). The findings below are kept as the original
+record.
+
+| Finding | Status | What changed |
+| --- | --- | --- |
+| CRIT-001 dev server publishes the project root | **Fixed** | A guard ahead of `vite.middlewares` answers 404 for `/data`, `/server`, `/docs`, `/screenshots`, `/tools`, dotfiles, `package*.json`, `tsconfig.json`, `vite.config.ts`, `render.yaml` and `node_modules` outside `.vite`. Verified: those paths 404 while `/` and `/src/main.tsx` still serve. |
+| HIGH-002 plaintext password and secret | **Partly closed** | A hosted instance now takes `ADMIN_PASSWORD` and `SESSION_SECRET` from the environment, and the dev guard removes the HTTP route to the files. A generated first-boot password is still printed and written to `data/admin-credentials.txt` so a host without shell access stays usable: set `ADMIN_PASSWORD` instead, and delete the file after signing in. Every archive shared before this date still contains the old secret and password. |
+| MED-003 malformed cookie throws and returns 500 | **Fixed** | `decodeURIComponent` is wrapped per pair; `Cookie: fls_admin=%` now returns 200 on `/api/admin/session` and 401 on guarded routes. |
+| MED-004 failed logins are not recorded | **Fixed** | Each failure writes a `login` row with the client IP and never the attempted password. |
+| MED-005 rate limiting without `trust proxy` | **Fixed by configuration** | `TRUST_PROXY=1` is set in `render.yaml` and documented; `req.ip` and `req.secure` follow the proxy. |
+| MED-006 sessions survive password changes | **Fixed** | Tokens carry a fingerprint of the stored password hash and are re-checked per request; a password change ends every other session and re-issues the current one. Verified: the old cookie returns 401, the re-issued one 200. |
+| LOW-007 CSV formula injection | **Fixed** | Cells beginning with `=`, `+`, `-`, `@`, tab or CR are prefixed with an apostrophe. Verified with a product named `=HYPERLINK(...)`. |
+| LOW-008 missing CSP / HSTS / Permissions-Policy | **Fixed** | Production sends a nonce-based CSP (`script-src 'self' 'nonce-…'`), HSTS and a restrictive Permissions-Policy; responses also carry `frame-ancestors 'none'` and `object-src 'none'`. The storefront's JSON-LD block reads the nonce from a meta tag. |
+| LOW-009 9 MB JSON parser before authentication | **Fixed** | 1 MB globally; 9 MB only on `/api/admin/uploads` and `/api/admin/restore`. Verified: a 2 MB login body returns 413, a 2 MB image upload returns 201. |
+| LOW-010 traversal attempts surface as 500 | **Fixed** | The error handler maps a `403` from `send` instead of falling through. `/uploads/../data/session-secret` now returns 403. |
+
+Still open, and operational rather than code: rotating the credentials that were in earlier
+archives, keeping backups off-site, and the fact that `data/` must never be committed or shared.
+
 ## Findings
 
 ### [CRIT-001] Dev server publishes the whole project root, including secrets (Critical)

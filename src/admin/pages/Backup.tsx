@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { ApiError, downloadBackup, restoreBackupFile } from '../api'
+import { ApiError, downloadBackup, downloadBackupArchive, restoreBackupFile } from '../api'
 import { Button, Field, Input, Panel, useToast } from '../ui'
 
 type Counts = {
@@ -16,6 +16,7 @@ export function Backup() {
   const [file, setFile] = useState<File | null>(null)
   const [confirm, setConfirm] = useState('')
   const [exporting, setExporting] = useState(false)
+  const [archiving, setArchiving] = useState(false)
   const [restoring, setRestoring] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<Counts | null>(null)
@@ -30,6 +31,19 @@ export function Backup() {
       setError(cause instanceof ApiError ? cause.message : 'The backup could not be downloaded.')
     } finally {
       setExporting(false)
+    }
+  }
+
+  async function onArchive() {
+    setArchiving(true)
+    setError('')
+    try {
+      await downloadBackupArchive()
+      toast.push('Archive downloaded.')
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : 'The archive could not be downloaded.')
+    } finally {
+      setArchiving(false)
     }
   }
 
@@ -156,6 +170,26 @@ export function Backup() {
           ) : null}
         </Panel>
       </div>
+
+      <Panel className="p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-[62ch]">
+            <h2 className="display text-xl">Full archive</h2>
+            <p className="mt-2 text-[13px] leading-relaxed text-mute">
+              A .tar.gz holding the database and every uploaded image, so a lost disk or a bad edit
+              can be undone. It contains customer inquiries and the admin password hash, which is
+              why the JSON above leaves them out: keep this file private, not on a shared drive.
+            </p>
+            <p className="mt-2 text-[13px] leading-relaxed text-mute">
+              To restore, stop the service and replace falaise.db and the uploads folder inside the
+              data directory, then start it again.
+            </p>
+          </div>
+          <Button variant="outline" className="border-ink" onClick={onArchive} disabled={archiving}>
+            {archiving ? 'Packing…' : 'Download archive'}
+          </Button>
+        </div>
+      </Panel>
 
       {error ? (
         <p role="alert" className="border border-ink px-4 py-3 text-[13px]">

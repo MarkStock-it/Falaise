@@ -94,8 +94,9 @@ host for any reason, add `APP_ORIGIN=https://thedomain`.
   It asks for the current password and the new one twice, and needs no shell. If
   you are locked out, the fallback is service → **Shell** →
   `npm run admin:password -- 'the new password'` (10+ characters); the value lands
-  in the shell history, so run `history -c` afterwards. Either way, sessions that
-  are already signed in keep working until they expire (12 hours).
+  in the shell history, so run `history -c` afterwards. A password change ends
+  every other session immediately, because the token is bound to the password
+  hash; the browser that made the change is re-issued a cookie and stays in.
 - **Sign everyone out / rotate the signing key:** edit `SESSION_SECRET` in the
   dashboard and save. Any forged or stolen session dies with it.
 - The first-boot password is not written anywhere on Render when
@@ -105,23 +106,19 @@ host for any reason, add `APP_ORIGIN=https://thedomain`.
 
 ## 6. Backups
 
-Admin → **Backup** exports the catalogue and all content as one JSON file. It
-deliberately excludes inquiries, the admin hash and, because it is JSON, the
-uploaded images. Keep a copy after every significant round of edits.
+Admin → **Backup** offers two files:
 
-What that leaves out, and how to cover it:
+- **Full archive** (`.tar.gz`) holds `falaise.db`, every uploaded image and a
+  manifest, taken from a consistent `VACUUM INTO` snapshot. This is the one to
+  keep off-site after a round of edits. It contains customer inquiries and the
+  admin password hash, so store it privately, not in a shared drive.
+- **JSON** holds the catalogue and every content section and is safe to move
+  between machines; it deliberately leaves inquiries and images out.
 
-- **Inquiries** (customer names and messages) only exist in the database. Read
-  or reply to them in Admin → Inquiries, and copy anything long-lived into your
-  own records.
-- **Uploaded images** live at `/data/uploads`. Keep the original files on your
-  machine; re-uploading from the admin restores them.
-- **The whole database:** Render does not snapshot disks, and the JSON export
-  is the supported way to get data out. If you want a dated safety copy on the
-  disk itself, run `cp /data/falaise.db /data/backup-$(date +%F).db` in the
-  shell; that protects against a bad edit but is not an off-site backup. The
-  storefront's images and copy can always be rebuilt from this repo and your
-  original photo files.
+Restoring the archive means stopping the service and replacing `falaise.db` and
+`uploads/` inside `DATA_DIR`. Render does not snapshot disks, so an off-site copy
+is the only protection against a lost disk; the JSON export is what you restore
+from inside the admin when an edit goes wrong.
 
 ## 7. Running it for clients
 

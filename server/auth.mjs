@@ -1,4 +1,4 @@
-import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
+import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import { readFileSync, writeFileSync, existsSync, chmodSync } from 'node:fs'
 import { join } from 'node:path'
 import { DATA_DIR, db, nowIso } from './db.mjs'
@@ -83,18 +83,30 @@ function sign(payload) {
   return createHmac('sha256', SECRET).update(payload).digest('base64url')
 }
 
+/**
+ * A token is bound to the stored password hash, so changing the password ends
+ * every session that was issued before the change, including a stolen one.
+ * The signature already protects the value; the digest only keeps the hash out
+ * of the cookie.
+ */
+function passwordFingerprint() {
+  const row = db.prepare('SELECT password_hash FROM admin WHERE id = 1').get()
+  if (!row) return ''
+  return createHash('sha256').update(String(row.password_hash)).digest('base64url').slice(0, 22)
+}
+
 export function createSessionToken() {
   const expires = Date.now() + SESSION_TTL_MS
-  const payload = `${expires}.${randomBytes(12).toString('base64url')}`
+  const payload = `${expires}.${randomBytes(12).toString('base64url')}.${passwordFingerprint()}`
   return `${payload}.${sign(payload)}`
 }
 
 export function verifySessionToken(token) {
   if (!token) return false
   const parts = token.split('.')
-  if (parts.length !== 3) return false
-  const [expires, nonce, signature] = parts
-  const payload = `${expires}.${nonce}`
+  if (parts.length !== 4) return false
+  const [expires, nonce, fingerprint, signature] = parts
+  const payload = `${expires}.${nonce}.${fingerprint}`
   const expected = sign(payload)
   if (
     signature.length !== expected.length ||
@@ -102,6 +114,9 @@ export function verifySessionToken(token) {
   ) {
     return false
   }
+  const current = passwordFingerprint()
+  if (fingerprint.length !== current.length || !current) return false
+  if (!timingSafeEqual(Buffer.from(fingerprint), Buffer.from(current))) return false
   const expiry = Number(expires)
   return Number.isFinite(expiry) && expiry > Date.now()
 }
@@ -113,7 +128,12 @@ export function parseCookies(header) {
     if (index === -1) continue
     const key = part.slice(0, index).trim()
     if (!key) continue
-    out[key] = decodeURIComponent(part.slice(index + 1).trim())
+    try {
+      out[key] = decodeURIComponent(part.slice(index + 1).trim())
+    } catch {
+      // A malformed cookie is not a server error; ignore the pair and let the
+      // request continue unauthenticated.
+    }
   }
   return out
 }

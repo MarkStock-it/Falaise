@@ -161,15 +161,16 @@ export function Account() {
             <div>
               <dt className="label text-mute">Other devices</dt>
               <dd className="mt-1">
-                A change here does not sign out a browser that is already signed in. Sessions end
-                on their own after 12 hours; on a shared machine, use Sign out in the header.
+                Changing the password signs out every other browser at once. This one stays
+                signed in, so an old session on a machine you no longer trust cannot be used.
               </dd>
             </div>
             <div>
               <dt className="label text-mute">If it leaks</dt>
               <dd className="mt-1">
-                Change it here first, then rotate the session secret on the host so the old
-                sessions stop working. The hosting guide has the steps.
+                Change it here. That ends every existing session; rotate the session secret on
+                the host only if you also want to sign out this browser. The hosting guide has
+                the steps.
               </dd>
             </div>
           </dl>

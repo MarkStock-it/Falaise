@@ -511,7 +511,10 @@ export function overview() {
 
 function csvCell(value) {
   const text = value === null || value === undefined ? '' : String(value)
-  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+  // A cell opening with =, +, - or @ is executed as a formula by spreadsheet
+  // apps. Prefix it with an apostrophe so an imported product name stays text.
+  const safe = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text
+  return /[",\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe
 }
 
 export function productsCsv() {

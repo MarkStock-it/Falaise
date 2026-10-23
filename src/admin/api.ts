@@ -124,6 +124,34 @@ export async function downloadBackup(): Promise<void> {
   URL.revokeObjectURL(url)
 }
 
+/**
+ * Downloads the full archive: the SQLite database and every uploaded image.
+ * Unlike the JSON export it includes inquiries and the admin hash, so it is a
+ * private file, not something to share.
+ */
+export async function downloadBackupArchive(): Promise<void> {
+  const response = await fetch('/api/admin/backup/archive', { credentials: 'same-origin' })
+  if (response.status === 401) {
+    window.location.assign('/admin-login.html')
+    throw new ApiError('Your session expired. Sign in again.', 401)
+  }
+  if (!response.ok) throw new ApiError('The archive could not be downloaded.', response.status)
+
+  const blob = await response.blob()
+  const disposition = response.headers.get('content-disposition') ?? ''
+  const match = /filename="([^"]+)"/.exec(disposition)
+  const stamp = new Date().toISOString().slice(0, 10)
+  const name = match?.[1] ?? `falaise-backup-${stamp}.tar.gz`
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = name
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  URL.revokeObjectURL(url)
+}
+
 /** Applies a backup file. The server validates it and rolls back on any failure. */
 export async function restoreBackupFile(file: File): Promise<RestoreResult> {
   const text = await file.text()

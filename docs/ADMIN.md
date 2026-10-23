@@ -150,8 +150,10 @@ cannot provide if the HTML is public. If more staff accounts are needed later, t
 
 > The first-boot password is in `data/admin-credentials.txt` (git-ignored). Rotate
 > it at **Account → Password** in the admin, or with
-> `npm run admin:password -- '<new password>'` if you are locked out. A change does
-> not end sessions already issued; rotate `SESSION_SECRET` to sign them all out.
+> `npm run admin:password -- '<new password>'` if you are locked out. Session
+> tokens carry a fingerprint of the stored password hash, so a change ends every
+> other session at once while the browser that made it stays signed in. Rotating
+> `SESSION_SECRET` additionally ends that one.
 
 ---
 
@@ -266,6 +268,13 @@ stored rows on boot, and stored values always win. Adding a *group* means adding
 Excluded on purpose: `inquiries` (customer personal data), `admin` (password hash),
 `stock_log` and `activity` (append-only history), plus the session secret. A restore therefore
 never destroys the DM inbox or the audit trail, and the file is safe to move between machines.
+
+**Admin -> Backup -> Full archive** downloads `GET /api/admin/backup/archive`: a gzipped tar
+containing `falaise.db`, every file in `uploads/` and a `manifest.json`. It is built from a
+`VACUUM INTO` snapshot, so the database is consistent even though the shop never stops. This
+is the file to keep off-site: unlike the JSON export it *does* contain inquiries, the admin
+hash and the images, so treat it as private, and restore it by stopping the service and
+replacing `falaise.db` and `uploads/` inside the data directory.
 
 Restore validates before writing: app marker, version, unique ids and slugs, every colour and
 variant pointing at a record that exists in the file, no duplicate colour+size variant, content
