@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.tmp/
+.env
+data/falaise.db
+data/falaise.db-*
+data/session-secret
+data/admin-credentials.txt
+data/uploads/*
+!data/uploads/.gitkeep
+screenshots/
+falaise-store-source.zip

@@ -1,0 +1,301 @@
+@import "tailwindcss";
+
+/* Latin subsets, self-hosted: no third-party render-blocking request. */
+@font-face {
+  font-family: "Bricolage Grotesque";
+  font-style: normal;
+  font-weight: 200 800;
+  font-stretch: 75% 100%;
+  font-display: swap;
+  src: url("/fonts/bricolage-grotesque-subset.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Literata";
+  font-style: normal;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url("/fonts/literata-subset.woff2") format("woff2");
+}
+
+@theme {
+  --color-ink: #0a0a0a;
+  --color-ink-soft: #151515;
+  --color-ink-3: #1e1e1e;
+  --color-paper: #f3f1ea;
+  --color-paper-deep: #e9e6db;
+  --color-bone: #ded8ca;
+  --color-stage: #cfc8b8;
+  --color-mute: #6b6860;
+  --color-line: #d6d2c6;
+  --color-line-ink: #2a2a2a;
+  --color-acid: #d8ff3e;
+
+  --font-display: "Bricolage Grotesque", "Arial Narrow", sans-serif;
+  --font-body: "Literata", Georgia, serif;
+  --font-label: "Bricolage Grotesque", "Arial Narrow", sans-serif;
+
+  --text-label: clamp(0.6875rem, 0.66rem + 0.12vw, 0.75rem);
+  --text-label--line-height: 1.2;
+  --text-body: clamp(1rem, 0.95rem + 0.22vw, 1.125rem);
+  --text-body--line-height: 1.7;
+  --text-lede: clamp(1.25rem, 1.05rem + 0.9vw, 1.875rem);
+  --text-lede--line-height: 1.35;
+  --text-h3: clamp(1.5rem, 1.28rem + 1vw, 2.125rem);
+  --text-h3--line-height: 1.2;
+  --text-h2: clamp(2.125rem, 1.35rem + 3.4vw, 4.25rem);
+  --text-h2--line-height: 0.98;
+  --text-h1: clamp(2.75rem, 1.5rem + 5.8vw, 7.5rem);
+  --text-h1--line-height: 0.9;
+  --text-mega: clamp(4rem, 0.2rem + 17vw, 16rem);
+  --text-mega--line-height: 0.8;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-power3: cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+@layer base {
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: 1.7;
+    font-kerning: normal;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* clip, not hidden: hidden turns body into a scroll container and
+       breaks ScrollTrigger pinning and position: fixed children. */
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-acid);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+    border-radius: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  figure {
+    margin: 0;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img,
+  svg,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  html.is-locked {
+    overflow: hidden;
+  }
+
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    html.cursor-ready,
+    html.cursor-ready body,
+    html.cursor-ready a,
+    html.cursor-ready button,
+    html.cursor-ready [role="button"] {
+      cursor: none;
+    }
+  }
+}
+
+@layer components {
+  .display {
+    font-family: var(--font-display);
+    font-weight: 650;
+    font-stretch: 80%;
+    letter-spacing: -0.035em;
+    line-height: 0.9;
+    text-transform: uppercase;
+    font-optical-sizing: auto;
+  }
+
+  .display-tight {
+    font-stretch: 76%;
+    letter-spacing: -0.045em;
+  }
+
+  .label {
+    font-family: var(--font-label);
+    font-size: var(--text-label);
+    line-height: 1.2;
+    font-weight: 550;
+    letter-spacing: 0.075em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .prose-body {
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: 1.75;
+    max-width: 60ch;
+    text-wrap: pretty;
+  }
+
+  .lede {
+    font-family: var(--font-body);
+    font-size: var(--text-lede);
+    line-height: 1.35;
+    font-weight: 350;
+    letter-spacing: -0.01em;
+    text-wrap: pretty;
+  }
+
+  .rule-t {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .rule-b {
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .hairline-dark {
+    border-color: var(--color-line-ink);
+  }
+
+  .shell {
+    width: 100%;
+    max-width: 96rem;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 4.5rem);
+  }
+
+  .grain {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+
+  .link-line {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .link-line::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -0.2em;
+    height: 1px;
+    width: 100%;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.45s var(--ease-out-expo);
+  }
+
+  .link-line:hover::after,
+  .link-line:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .page-in {
+    animation: page-in 0.55s var(--ease-out-expo) both;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer utilities {
+  /* The muted tone is calibrated for paper. On the near-black sections it
+     needs to lift to stay above 4.5:1 for small labels. */
+  .bg-ink,
+  .bg-ink-soft,
+  .bg-ink-3 {
+    --color-mute: #a8a49a;
+  }
+}
+
+@keyframes page-in {
+  /* Opacity only. A transform here creates a containing block for fixed
+     descendants such as the bag drawer and the cursor. */
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .page-in {
+    animation: none;
+  }
+}
