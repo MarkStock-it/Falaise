@@ -419,8 +419,12 @@ export function createApp({ vite = null } = {}) {
 
 export function start() {
   const port = Number(process.env.PORT || 8787)
-  // Local runs stay on loopback; a container or PaaS needs the wildcard.
-  const host = process.env.HOST || '127.0.0.1'
+  // A host terminates TLS and routes traffic to the container interface, so a
+  // production start must bind 0.0.0.0 or the platform reports no open port.
+  // Local `npm start` without NODE_ENV stays on loopback, keeping the admin off
+  // the LAN.
+  const host =
+    process.env.HOST || (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1')
   ensureAdmin()
   const app = createApp()
   const server = app.listen(port, host, () => {

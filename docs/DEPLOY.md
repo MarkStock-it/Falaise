@@ -46,6 +46,23 @@ are a build that skipped the client build (no `dist/`, so the server answers
 port — `HOST=0.0.0.0` and `PORT` are handled by `server/index.mjs`, so do not
 override them.
 
+### "No open ports detected on 0.0.0.0"
+
+That line means Render's router cannot reach the process, and the deploy hangs
+until it times out. Two things cause it:
+
+- **The wrong branch.** Older revisions bound `127.0.0.1` only. Check the log
+  line that prints the store URL: `http://127.0.0.1:10000` is the old code, so
+  the service is building the default branch. Merge this work to `main`, or set
+  the service's branch to the one carrying it (Settings → Build & Deploy →
+  Branch), then **Manual Deploy → Clear build cache & deploy**.
+- **A wrong `HOST`.** Render expects the wildcard. `HOST` must be `0.0.0.0` (or
+  unset with `NODE_ENV=production`, which the blueprint and the platform both
+  provide). Remove any value pointing at `127.0.0.1` or `localhost`.
+
+The process printing its password or startup banner does not mean the deploy
+succeeded; only the health check answering does.
+
 ## 3. Environment variables
 
 `render.yaml` sets these; change them in the dashboard if needed.
@@ -53,6 +70,7 @@ override them.
 | Variable | Value | Why |
 | --- | --- | --- |
 | `DATA_DIR` | `/data` | Puts the database, session secret and uploads on the disk. |
+| `HOST` | `0.0.0.0` | The process must accept connections from Render's router. `127.0.0.1` makes the platform report that no port is open. |
 | `COOKIE_SECURE` | `1` | Marks the admin session cookie `Secure` over HTTPS. |
 | `TRUST_PROXY` | `1` | Trusts Render's TLS proxy so `req.protocol` is `https`, `req.secure` is true, and the Origin check on admin writes matches. Without it every admin save returns 403 behind HTTPS, and the login throttle sees one IP. |
 | `ADMIN_PASSWORD` | set at creation | First boot only. |
