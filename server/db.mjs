@@ -1,6 +1,6 @@
 import { DatabaseSync } from 'node:sqlite'
 import { mkdirSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { randomUUID } from 'node:crypto'
 import {
@@ -11,7 +11,9 @@ import {
 } from './seed.mjs'
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
-export const DATA_DIR = join(ROOT, 'data')
+// Everything writable (database, session secret, uploads) lives under this one
+// directory, so a host only has to mount a single persistent disk at it.
+export const DATA_DIR = process.env.DATA_DIR ? resolve(process.env.DATA_DIR) : join(ROOT, 'data')
 export const UPLOAD_DIR = join(DATA_DIR, 'uploads')
 const DB_PATH = process.env.DB_PATH || join(DATA_DIR, 'falaise.db')
 
