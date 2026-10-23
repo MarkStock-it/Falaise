@@ -9,6 +9,7 @@ import { Content } from './pages/Content'
 import { Inquiries } from './pages/Inquiries'
 import { Activity } from './pages/Activity'
 import { Backup } from './pages/Backup'
+import { Account } from './pages/Account'
 
 const TABS = [
   { key: 'overview', label: 'Overview' },
@@ -19,6 +20,7 @@ const TABS = [
   { key: 'inquiries', label: 'Inquiries' },
   { key: 'activity', label: 'Activity' },
   { key: 'backup', label: 'Backup' },
+  { key: 'account', label: 'Account' },
 ] as const
 
 type TabKey = (typeof TABS)[number]['key']
@@ -175,7 +177,7 @@ export function AdminApp() {
                   <path d="M1 1.5 6 6.5l5-5" stroke="currentColor" strokeWidth="1.3" />
                 </svg>
               </div>
-              <ul className="no-scrollbar -mb-px hidden gap-5 sm:flex sm:gap-7">
+              <ul className="no-scrollbar -mb-px hidden max-w-full gap-5 overflow-x-auto sm:flex sm:gap-7">
                 {TABS.map((item) => {
                   const selected = tab === item.key
                   return (
@@ -206,6 +208,7 @@ export function AdminApp() {
             {tab === 'inquiries' ? <Inquiries /> : null}
             {tab === 'activity' ? <Activity /> : null}
             {tab === 'backup' ? <Backup /> : null}
+            {tab === 'account' ? <Account /> : null}
           </main>
         </div>
       </ConfirmProvider>

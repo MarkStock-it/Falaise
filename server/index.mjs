@@ -39,6 +39,7 @@ import {
   sameOrigin,
   sessionTokenFromRequest,
   setSessionCookie,
+  setPassword,
   verifyPassword,
 } from './auth.mjs'
 import {
@@ -129,6 +130,35 @@ export function createApp({ vite = null } = {}) {
   admin.use(requireAuth)
 
   admin.get('/overview', (req, res) => res.json(overview()))
+
+  admin.post('/password', (req, res) => {
+    const currentPassword =
+      typeof req.body?.currentPassword === 'string' ? req.body.currentPassword : ''
+    const newPassword = typeof req.body?.newPassword === 'string' ? req.body.newPassword : ''
+    if (!verifyPassword(currentPassword)) {
+      return fail(res, 422, 'Check the highlighted fields.', {
+        currentPassword: 'That is not the current password.',
+      })
+    }
+    if (newPassword.length < 10) {
+      return fail(res, 422, 'Check the highlighted fields.', {
+        newPassword: 'Use at least 10 characters.',
+      })
+    }
+    if (newPassword.length > 200) {
+      return fail(res, 422, 'Check the highlighted fields.', {
+        newPassword: 'Use 200 characters or fewer.',
+      })
+    }
+    if (newPassword === currentPassword) {
+      return fail(res, 422, 'Check the highlighted fields.', {
+        newPassword: 'Choose a password different from the current one.',
+      })
+    }
+    setPassword(newPassword)
+    logActivity('updated', 'admin', null, 'Changed the admin password.')
+    return res.json({ ok: true })
+  })
 
   admin.get('/products', (req, res) => {
     res.json({

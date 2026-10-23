@@ -123,8 +123,10 @@ per-field messages, which the admin forms render inline.
 **Method: single-operator password with a server-side session cookie.**
 
 - Password stored as **scrypt** hash (`N=16384, r=8, p=1`, 16-byte salt, 64-byte key)
-  in the `admin` table. Set with `npm run admin:password -- '<new>'`; the CLI prints
-  new credentials to `data/admin-credentials.txt`.
+  in the `admin` table. Change it in the admin at **Account → Password** (current
+  password required, 10+ characters); `npm run admin:password -- '<new>'` remains
+  the fallback when nobody is signed in, and is what the first boot writes to
+  `data/admin-credentials.txt`.
 - Login `POST /api/auth/login` verifies with `timingSafeEqual`, then sets an
   `HttpOnly`, `SameSite=Lax` cookie holding `expiry.hmacSHA256(expiry)` signed with
   a per-install secret in `data/session-secret` (32 random bytes, `0600`).
@@ -146,8 +148,10 @@ session gating is also required for `/admin.html` itself, which an SPA-only guar
 cannot provide if the HTML is public. If more staff accounts are needed later, the
 `admin` table grows to a users table and the same cookie logic stays.
 
-> Local credentials are in `data/admin-credentials.txt` (git-ignored). Rotate with
-> `npm run admin:password -- '<new password>'`.
+> The first-boot password is in `data/admin-credentials.txt` (git-ignored). Rotate
+> it at **Account → Password** in the admin, or with
+> `npm run admin:password -- '<new password>'` if you are locked out. A change does
+> not end sessions already issued; rotate `SESSION_SECRET` to sign them all out.
 
 ---
 

@@ -61,7 +61,7 @@ src/
   components/cart/      CartDrawer
   components/ui/        Button, Reveal
   admin/                AdminApp, api client, contentSchema, ui primitives
-  admin/pages/          Dashboard, Products, Collections, Content, Inquiries, Stock, Activity, Backup
+  admin/pages/          Dashboard, Products, Collections, Content, Inquiries, Stock, Activity, Backup, Account
   store/                site.tsx (fetches /api/store), cart.ts, ui.ts
   hooks/                usePageMeta, useMediaQuery, useReducedMotion
   lib/                  cn (class merge), scroll helpers

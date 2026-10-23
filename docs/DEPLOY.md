@@ -72,11 +72,12 @@ host for any reason, add `APP_ORIGIN=https://thedomain`.
 
 ## 5. Passwords and secrets
 
-- **Change the admin password:** service → **Shell** →
-  `npm run admin:password -- 'the new password'` (10+ characters). Passing it as
-  an argument avoids the interactive prompt; the value is in the shell history,
-  so run `history -c` afterwards. Existing sessions keep working until they
-  expire (12 hours).
+- **Change the admin password:** sign in and open **Admin → Account → Password**.
+  It asks for the current password and the new one twice, and needs no shell. If
+  you are locked out, the fallback is service → **Shell** →
+  `npm run admin:password -- 'the new password'` (10+ characters); the value lands
+  in the shell history, so run `history -c` afterwards. Either way, sessions that
+  are already signed in keep working until they expire (12 hours).
 - **Sign everyone out / rotate the signing key:** edit `SESSION_SECRET` in the
   dashboard and save. Any forged or stolen session dies with it.
 - The first-boot password is not written anywhere on Render when
@@ -114,7 +115,9 @@ disk-backed design is single-instance by construction.
 Per client, the handover checklist is: custom domain attached, password set and
 stored, `SESSION_SECRET` generated (not copied), backup exported once the
 content is final, and the client told that all edits happen at
-`https://domain/admin.html` — no terminal, no local run.
+`https://domain/admin.html` — no terminal, no local run. If you keep the admin
+password, the client uses the storefront only; if they get it, they can change it
+themselves at Account → Password.
 
 ## 8. Costs and limits to keep in mind
 

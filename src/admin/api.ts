@@ -61,6 +61,11 @@ export async function uploadImage(dataUrl: string): Promise<string> {
   return result.url
 }
 
+/** Changes the admin password. The current one is required as confirmation. */
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  await api.post('/api/admin/password', { currentPassword, newPassword })
+}
+
 export async function downloadProductsCsv(): Promise<void> {
   const response = await fetch('/api/admin/products.csv', { credentials: 'same-origin' })
   if (response.status === 401) {
