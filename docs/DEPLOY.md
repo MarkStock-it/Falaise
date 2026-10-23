@@ -131,6 +131,23 @@ themselves at Account → Password.
 - Render's Free plan cannot hold this app's data. A free service also cold-starts
   after sleeping, which is fine for a design demo and wrong for a shop.
 
+### Free instances and the keep-alive ping
+
+A Free service spins down after 15 idle minutes. `.github/workflows/keep-alive.yml`
+requests `/api/health` every five minutes to keep it awake: set the base URL once as
+an Actions **repository variable** named `APP_URL` (Settings → Secrets and variables
+→ Actions → Variables), for example `https://falaise.onrender.com`, with no trailing
+slash. It retries cold starts and fails the run if the health check does not report
+`"ok":true`. Ping `/api/health`, not `/`, which would rebuild the whole catalogue
+every five minutes.
+
+The workflow only runs from the **default branch**, GitHub can start scheduled runs
+late, and it disables the schedule after 60 days without repository activity. Each
+run bills at least one minute, so a private repository would use roughly 8,600 of
+its 2,000 free minutes a month; on a private repo use UptimeRobot (free plan: 5-minute
+checks) or cron-job.org instead. None of this makes a Free instance safe for a client:
+without the disk, every edit and upload is still lost on the next restart.
+
 ## 9. Alternatives with the same disk model
 
 - **Railway** — Hobby $5/month including $5 of usage, 5 GB volume, GitHub or
