@@ -10,3 +10,6 @@ data/uploads/*
 !data/uploads/.gitkeep
 screenshots/
 falaise-store-source.zip
+
+# freebuff desktop staging
+/freebuff-sites-build/

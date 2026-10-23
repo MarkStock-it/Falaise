@@ -23,7 +23,7 @@ export function Contact() {
   }))
 
   usePageMeta({
-    title: 'Contact — FALAISE',
+    title: 'Contact | FALAISE',
     description: `Questions about Le Tee, sizing, shipping or a return? Message FALAISE in ${content.site.city} on Instagram at ${links.handle}. Hours: ${content.footer.hours}.`,
   })
 
@@ -200,7 +200,7 @@ export function Contact() {
             Message {links.handle} <Arrow />
           </ButtonLink>
           {featured ? (
-            <ButtonLink to={`/product/${featured.slug}`} variant="outline">
+            <ButtonLink to={`/shop?piece=${featured.slug}`} variant="outline" viewTransition>
               See {featured.name}
             </ButtonLink>
           ) : (

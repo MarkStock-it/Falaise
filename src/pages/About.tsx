@@ -11,7 +11,7 @@ export function About() {
   const chrome = data!.content.chrome
 
   usePageMeta({
-    title: 'Studio — FALAISE',
+    title: 'Studio | FALAISE',
     description: about.lede,
     image: '/photos/editorial-seaside.webp',
   })
@@ -191,7 +191,7 @@ export function About() {
           </Reveal>
           <Reveal delay={80} className="flex flex-wrap gap-3">
             {featured ? (
-              <ButtonLink to={`/product/${featured.slug}`} variant="ink">
+              <ButtonLink to={`/shop?piece=${featured.slug}`} variant="ink" viewTransition>
                 {chrome.seeLabel} {featured.name} <Arrow />
               </ButtonLink>
             ) : null}

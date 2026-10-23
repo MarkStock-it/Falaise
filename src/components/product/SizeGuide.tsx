@@ -27,7 +27,7 @@ export function SizeGuide({
   ]
   const rows = product.sizes.map((size) => {
     const row = sizing?.rows.find((item) => item.size === size)
-    return [size, row?.width || '—', row?.length || '—', row?.sleeve || '—']
+    return [size, row?.width || 'n/a', row?.length || 'n/a', row?.sleeve || 'n/a']
   })
   const note = sizing?.note ?? ''
   const unit = sizing?.unit || 'inches'

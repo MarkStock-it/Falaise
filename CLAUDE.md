@@ -41,6 +41,7 @@ admin.html              admin app entry (Vite input "admin")
 admin-login.html        admin login entry (Vite input "adminLogin")
 vite.config.ts          three-rollup-input build; React + Tailwind plugins
 tsconfig.json           strict, noEmit, bundler resolution, includes only src/
+render.yaml             Render blueprint: one Node web service + 1 GB disk at /data
 server/
   index.mjs             createApp(): routes, middleware, headers, error handler, start()
   dev.mjs               dev entry: Express + Vite in middlewareMode on PORT (default 8787)
@@ -60,7 +61,7 @@ src/
   components/cart/      CartDrawer
   components/ui/        Button, Reveal
   admin/                AdminApp, api client, contentSchema, ui primitives
-  admin/pages/          Dashboard, Products, Collections, Content, Inquiries, Stock, Activity, Backup
+  admin/pages/          Dashboard, Products, Collections, Content, Inquiries, Stock, Activity, Backup, Account
   store/                site.tsx (fetches /api/store), cart.ts, ui.ts
   hooks/                usePageMeta, useMediaQuery, useReducedMotion
   lib/                  cn (class merge), scroll helpers
@@ -70,8 +71,9 @@ src/
 public/                 brand SVGs/PNGs, fonts (subset woff2), photos (webp), og image, robots.txt
 data/                   runtime state: falaise.db (+wal/shm), uploads/, session-secret,
                         admin-credentials.txt — never committed, never served in production
-docs/                   ADMIN.md (admin/CMS guide), SECURITY-AUDIT.md, OWNER-INTAKE.md
-                        (short owner form), archive/OWNER-INTAKE-full.md (old 300-question version)
+docs/                   ADMIN.md (admin/CMS guide), DEPLOY.md (hosting on Render),
+                        SECURITY-AUDIT.md, OWNER-INTAKE.md (short owner form),
+                        archive/OWNER-INTAKE-full.md (old 300-question version)
 dist/                   build output (gitignored); served by `npm start`
 tools/                  wordmark SVG generator script + source image
 ```
@@ -109,7 +111,10 @@ values. `.gitignore` already excludes `.env`.
 | `COOKIE_SECURE` | `1` adds `Secure` to the session cookie (HTTPS only) | off |
 | `SESSION_SECRET` | pins the cookie-signing key instead of `data/session-secret` | generated file |
 | `APP_ORIGIN` | extra allowed Origin for write requests | none |
-| `DB_PATH` | alternate SQLite file | `data/falaise.db` |
+| `DB_PATH` | alternate SQLite file | `$DATA_DIR/falaise.db` |
+| `DATA_DIR` | one writable directory for the database, `session-secret`, `uploads/` and `admin-credentials.txt`; point it at a mounted disk when hosted | `data/` in the repo |
+| `HOST` | interface the production server binds (`npm start`) | `127.0.0.1`; containers need `0.0.0.0` |
+| `TRUST_PROXY` | trusted proxy hops (`1` behind a TLS proxy) | off |
 
 ## Conventions and patterns
 
@@ -160,6 +165,13 @@ values. `.gitignore` already excludes `.env`.
   `aria-*` labels, `prefers-reduced-motion` respected via Lenis and `useReducedMotion`. Keep it.
 - Never introduce `dangerouslySetInnerHTML`; React escaping is the XSS defence.
 
+## Deployment
+
+The chosen host is **Render**, one web service with a 1 GB disk mounted at `/data`
+(`render.yaml`); see `docs/DEPLOY.md`. Because everything writable sits under `DATA_DIR`, the
+same layout works on Railway or Fly. The service is single-instance by design: a second
+instance would open a second, empty disk. Not deployed yet.
+
 ## Vercel deployment notes
 
 **Read this before touching deployment: the app as written cannot run on Vercel.**
@@ -206,7 +218,9 @@ values. `.gitignore` already excludes `.env`.
 ## Current status and next steps
 
 Storefront and admin are functionally complete and verified running from `E:\Falaise`
-(`npm run typecheck` clean, `/api/store` 200, all routes render). Not launched: no hosting
-decision, no backups, no analytics. Immediate next steps: remediate `docs/SECURITY-AUDIT.md`
-(dev-mode leak, rotate password + session secret), choose an API host, then add sitemap/robots
-hardening, error monitoring and a launch checklist. See `BUILD_PLAN.md` for the ordered list.
+(`npm run typecheck` clean, `/api/store` 200, all routes render). One Render service with a
+disk is prepared (`render.yaml`, `docs/DEPLOY.md`) but **not deployed**: there is no live
+instance, no off-site backup and no analytics. Immediate next steps: deploy on Render, rotate
+the password and session secret on that instance, remediate `docs/SECURITY-AUDIT.md`
+(dev-mode leak), then add sitemap/robots hardening, error monitoring and a launch checklist.
+See `BUILD_PLAN.md` for the ordered list.

@@ -11,7 +11,7 @@ export function NotFound() {
   const featured = data?.products.find((product) => product.featured) ?? data?.products[0]
 
   usePageMeta({
-    title: `Not found — ${content?.site.name ?? 'FALAISE'}`,
+    title: `Not found | ${content?.site.name ?? 'FALAISE'}`,
     description: 'This page is off the edge. Return to the store or see the current piece.',
   })
 
@@ -60,7 +60,8 @@ export function NotFound() {
             </Link>
             {featured ? (
               <Link
-                to={`/product/${featured.slug}`}
+                to={`/shop?piece=${featured.slug}`}
+                viewTransition
                 className="group flex h-14 min-w-[12rem] items-center justify-between gap-8 border border-line-ink bg-paper px-5 text-ink transition-colors hover:bg-paper-deep"
               >
                 <span className="label">

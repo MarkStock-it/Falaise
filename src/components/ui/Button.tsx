@@ -50,6 +50,7 @@ type ButtonLinkProps = {
   children: ReactNode
   onClick?: () => void
   ariaLabel?: string
+  viewTransition?: boolean
 }
 
 export function ButtonLink({
@@ -61,6 +62,7 @@ export function ButtonLink({
   children,
   onClick,
   ariaLabel,
+  viewTransition,
 }: ButtonLinkProps) {
   const classes = cn(base, variants[variant], sizes[size], className)
 
@@ -80,7 +82,13 @@ export function ButtonLink({
   }
 
   return (
-    <Link to={to ?? '/'} className={classes} aria-label={ariaLabel} onClick={onClick}>
+    <Link
+      to={to ?? '/'}
+      viewTransition={viewTransition}
+      className={classes}
+      aria-label={ariaLabel}
+      onClick={onClick}
+    >
       {children}
     </Link>
   )

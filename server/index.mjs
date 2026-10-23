@@ -3,7 +3,7 @@ import express from 'express'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { randomUUID } from 'node:crypto'
-import { ROOT, UPLOAD_DIR, db, getContentMap, logActivity, nowIso, putContent } from './db.mjs'
+import { DATA_DIR, ROOT, UPLOAD_DIR, db, getContentMap, logActivity, nowIso, putContent } from './db.mjs'
 import {
   bulkSetStock,
   createCollection,
@@ -39,6 +39,7 @@ import {
   sameOrigin,
   sessionTokenFromRequest,
   setSessionCookie,
+  setPassword,
   verifyPassword,
 } from './auth.mjs'
 import {
@@ -67,6 +68,14 @@ function fail(res, status, error, fields) {
 export function createApp({ vite = null } = {}) {
   const app = express()
   app.disable('x-powered-by')
+  // Hosted behind a TLS proxy (Render, Railway, Fly) the app must trust that one
+  // hop, otherwise req.protocol stays http: req.secure never turns on and the
+  // Origin check rejects real admin writes. Left off locally so a direct client
+  // cannot spoof X-Forwarded-For into the login throttle.
+  const trustProxy = process.env.TRUST_PROXY
+  if (trustProxy) {
+    app.set('trust proxy', /^\d+$/.test(trustProxy) ? Number(trustProxy) : trustProxy)
+  }
   app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff')
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
@@ -121,6 +130,35 @@ export function createApp({ vite = null } = {}) {
   admin.use(requireAuth)
 
   admin.get('/overview', (req, res) => res.json(overview()))
+
+  admin.post('/password', (req, res) => {
+    const currentPassword =
+      typeof req.body?.currentPassword === 'string' ? req.body.currentPassword : ''
+    const newPassword = typeof req.body?.newPassword === 'string' ? req.body.newPassword : ''
+    if (!verifyPassword(currentPassword)) {
+      return fail(res, 422, 'Check the highlighted fields.', {
+        currentPassword: 'That is not the current password.',
+      })
+    }
+    if (newPassword.length < 10) {
+      return fail(res, 422, 'Check the highlighted fields.', {
+        newPassword: 'Use at least 10 characters.',
+      })
+    }
+    if (newPassword.length > 200) {
+      return fail(res, 422, 'Check the highlighted fields.', {
+        newPassword: 'Use 200 characters or fewer.',
+      })
+    }
+    if (newPassword === currentPassword) {
+      return fail(res, 422, 'Check the highlighted fields.', {
+        newPassword: 'Choose a password different from the current one.',
+      })
+    }
+    setPassword(newPassword)
+    logActivity('updated', 'admin', null, 'Changed the admin password.')
+    return res.json({ ok: true })
+  })
 
   admin.get('/products', (req, res) => {
     res.json({
@@ -381,11 +419,19 @@ export function createApp({ vite = null } = {}) {
 
 export function start() {
   const port = Number(process.env.PORT || 8787)
+  // A host terminates TLS and routes traffic to the container interface, so a
+  // production start must bind 0.0.0.0 or the platform reports no open port.
+  // Local `npm start` without NODE_ENV stays on loopback, keeping the admin off
+  // the LAN.
+  const host =
+    process.env.HOST || (process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1')
   ensureAdmin()
   const app = createApp()
-  const server = app.listen(port, '127.0.0.1', () => {
-    console.log(`\n  FALAISE store  http://127.0.0.1:${port}`)
-    console.log(`  Admin          http://127.0.0.1:${port}/admin.html\n`)
+  const server = app.listen(port, host, () => {
+    const shown = host === '0.0.0.0' || host === '::' ? 'localhost' : host
+    console.log(`\n  FALAISE store  http://${shown}:${port}`)
+    console.log(`  Admin          http://${shown}:${port}/admin.html`)
+    console.log(`  Data           ${DATA_DIR}\n`)
   })
   const shutdown = () => server.close(() => process.exit(0))
   process.on('SIGINT', shutdown)
